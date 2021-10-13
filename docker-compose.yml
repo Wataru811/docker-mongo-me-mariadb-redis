@@ -1,0 +1,68 @@
+version: '3.4'
+services:
+  mariadb:
+    image: mariadb:10.5
+    environment:
+      MYSQL_DATABASE: "active-cv"
+      MYSQL_USER: "activecv_user"
+      MYSQL_PASSWORD: "activecv1219"
+      MYSQL_ROOT_PASSWORD: "rootpasswd"
+
+
+    logging:
+      driver: syslog
+      options:
+        tag: "{{.DaemonName}}(image={{.ImageName}};name={{.Name}};id={{.ID}})"
+    networks:
+      - backend
+    restart: on-failure
+    volumes:
+     - ${PWD}/mariadb:/var/lib/mysql
+    logging:
+      driver: none
+    ports:
+      - "3306:3306"
+#    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --init-connect='SET NAMES UTF8;' --innodb-flush-log-at-trx-commit=0
+
+
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+    volumes:
+      - "./data/reis:/data"
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+      - "28017:28017"
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=example123
+
+# host port 8082
+  mongo-express:
+    image: mongo-express
+    ports:
+      - "8082:8081"
+    restart: always
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=example123
+      - ME_CONFIG_MONGODB_SERVER=mongo
+#      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+#      - ME_CONFIG_BASICAUTH_USERNAME=admin
+#      - ME_CONFIG_BASICAUTH_PASSWORD=example123
+#      - MONGO_DB_URI=mongodb://admin:example123@mongo:27017
+
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+
+
